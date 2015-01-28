@@ -20,7 +20,7 @@
 #ifndef TPAGECOLLECTION_H
 #define TPAGECOLLECTION_H
 
-#include "tpage.h"
+#include "page.h"
 #include <QObject>
 #include <QPixmap>
 #include <QVector>
@@ -35,15 +35,20 @@ public:
     static PageCollection *instance();
     static void clearCollection();
     bool appendPage(const QString &fileName);
-    void newPage(const QString &fileName, qreal rotation, bool preprocessed, bool deskewed);
+    Page * newPage(const QString &fileName, qreal rotation, bool preprocessed, bool deskewed, bool cropped);
     int count();
+    QString text();
+    void setText(const QString &t);
     bool makePageCurrent(int index);
     bool makePageCurrentByID(int id);
     void setBeforeFirst(); // the page pointer is set before the first page
     bool makeNextPageCurrent();
+    bool textAtNextId(int &cid, QString &text);
     QSnippet *snippet();
     QPixmap pixmap();
     void savePageForRecognition(const QString &fileName);
+    void SaveCurrentPageText(const QString &fileName, bool truncate = true);
+    void saveAllText(const QString &fileName, bool truncate);
     void saveRawBlockForRecognition(QRect r, const QString &fileName);
     void saveBlockForRecognition(QRect r, const QString &fileName, const QString &format = "BMP");
     void saveBlockForRecognition(int index, const QString &fileName);
@@ -54,11 +59,13 @@ public:
     Block getSelectedBlock();
     bool pageValid();
     QString fileName();
-    QString OriginalFileName();
+    QString originalFileName();
+    void setOriginalFileName(const QString &fn);
     bool hasPage();
     bool savePageAsImage(const QString &fileName, const QString &format);
     bool isDeskewed();
     bool isPreprocessed();
+    bool isCropped();
     qreal getRotation();
     void setRotation(const qreal value);
     void setDeskewed(const bool value);
@@ -67,6 +74,13 @@ public:
     void unloadAll();
     void deskew(int x1, int y1, int x2, int y2);
     QRect scaleRect(QRect &rect);
+    QRect scaleRect(QRect &rect, qreal scale);
+    QRect scaleRectToPage(QRect &rect);
+    void splitTable();
+    void saveCurrentText(const QString &text);
+    QString currentText();
+    void storeCurrentIndex();
+    void restoreCurrentIndex();
 public slots:
     void makeLarger();
     void makeSmaller();
@@ -77,11 +91,12 @@ public slots:
     void blockAllText();
     bool splitPage(bool preprocess);
     void addBlock(const QRect &rect);
+    void addBlock(const QRect &rect, int num);
     void deleteBlock(const QRect &rect);
     void clearBlocks();
     void clear();
 signals:
-    void loadPage(); // The page is already current
+    void loadPage(bool show); // The page is already current
     void addSnippet(int index);
     void cleared();
     void messagePosted(const QString &msg);
@@ -99,6 +114,8 @@ private:
     QVector<Page *> pages;
     int index;
     int pid;
+    int currentId;
+    bool mTextSaved;
     static PageCollection *m_instance;
 };
 

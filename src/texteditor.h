@@ -32,13 +32,10 @@ class TextEditor : public QTextEdit
 public:
     explicit TextEditor(QWidget *parent = 0);
     ~TextEditor();
-    bool textSaved();
     bool spellCheck(const QString &lang);
     void unSpellCheck();
     void enumerateDicts();
     bool hasDict(const QString &shname);
-public slots:
-    void saveText();
 protected:
     void keyPressEvent ( QKeyEvent *e );
     void wheelEvent ( QWheelEvent *e );
@@ -57,7 +54,7 @@ private:
 private:
     SpellChecker spellChecker;
     bool hasCopy;
-    bool mTextSaved;
+   // bool mTextSaved;
 };
 
 #endif // TEXTEDITOR_H

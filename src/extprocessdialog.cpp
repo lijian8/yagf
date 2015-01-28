@@ -17,49 +17,35 @@
 
 */
 
-#include "pdfthread.h"
-#include "pdfextractor.h"
-#include <QProcess>
+#include "extprocessdialog.h"
+#include "ui_extprocessdialog.h"
 
-PDFThread::PDFThread(PDFExtractor *parent) :
-    QThread()
+ExtProcessDialog::ExtProcessDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::ExtProcessDialog)
 {
-    mparent = parent;
-    done = false;
-    processRunning= true;
+    ui->setupUi(this);
+    ui->widget->startAnimation();
 }
 
-PDFThread::~PDFThread()
+ExtProcessDialog::~ExtProcessDialog()
 {
-    done = true;
-    sleep(2);
+    delete ui;
 }
 
-void PDFThread::run()
+void ExtProcessDialog::hideButton()
 {
-    done = false;
-    QProcess process;
-    connect(mparent, SIGNAL(terminate()), this, SLOT(politeStop()));
-    process.start(command, arguments);
-    processRunning = true;
-    process.waitForFinished(800000);
-    processRunning = false;
-    process.kill();
+    ui->pushButton->hide();
 }
 
-void PDFThread::setProcess(const QString &cmd, const QStringList &args)
+void ExtProcessDialog::hide()
 {
-    command = cmd;
-    arguments.clear();
-    arguments.append(args);
+    ui->pushButton->show();
+    QDialog::hide();
 }
 
-bool PDFThread::isProcessRunning()
+void ExtProcessDialog::on_pushButton_clicked()
 {
-    return processRunning;
+    close();
 }
 
-void PDFThread::politeStop()
-{
-    done = true;
-}

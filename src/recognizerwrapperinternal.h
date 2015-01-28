@@ -20,7 +20,21 @@
 #include <QProcess>
 #include <QFile>
 #include <QDir>
+#include "globallock.h"
 #include <QTextCodec>
+
+class RWHelper
+{
+public:
+    RWHelper()
+    {
+    }
+
+    ~RWHelper()
+    {
+        GlobalLock::instance()->unlock();
+    }
+};
 
 class RecognizerWrapperInternal : public QObject
 {
@@ -67,7 +81,7 @@ signals:
     void error(QProcess::ProcessError);
     void error(const QString &text);
     void blockRecognized(int n);
-    void readOutput(QString text);
+    void readOutput(QString text, QChar separator = QChar::fromAscii('\n'));
 public slots:
     void onFinished(int i)
     {
@@ -75,7 +89,7 @@ public slots:
         blockIndex++;
         if (blockIndex < pc->blockCount()) {
             prepareBlockForRecognition(blockIndex);
-            emit blockRecognized(blockIndex);
+            emit blockRecognized(blockIndex+1);
             recognizeInternal();
         } else emit finished(i);
     }
@@ -90,6 +104,10 @@ private: // variables
 private: // functions
     void sendOutput()
     {
+        bool res = GlobalLock::instance()->lock();
+        if (!res)
+            return;
+        RWHelper h;
         QFile textFile(settings->workingDir() + settings->getRecognizeOutputFile());
         textFile.open(QIODevice::ReadOnly);
         QString textData;
@@ -108,7 +126,12 @@ private: // functions
         }
         textFile.close();
         textData = textData.replace(" ,", ",");
-        emit readOutput(textData);
+        QChar sep = QChar::fromAscii(']');
+        if (pc->blockCount() > blockIndex) {
+            if (pc->getBlock(blockIndex).isTableCell())
+                sep = QChar::fromAscii('|');
+        }
+        emit readOutput(textData, sep);
     }
 
     void recognizeInternal() {

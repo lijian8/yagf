@@ -5,8 +5,6 @@
         <file alias="yagf.png">images/yagf.png</file>
         <file>images/document_save_as.png</file>
         <file>images/editcopy.png</file>
-        <file>images/fileopen.png</file>
-        <file>images/filesaveas.png</file>
         <file>images/scanner.png</file>
         <file alias="warning.png">images/warning.png</file>
         <file alias="critical.png">images/critical.png</file>
@@ -28,7 +26,6 @@
         <file>images/selecttext.png</file>
         <file>images/edit_paste.png</file>
         <file>images/selectmulti.png</file>
-        <file>images/appearence.png</file>
         <file>images/eISet.png</file>
         <file>images/recognition.png</file>
         <file>images/advanced.png</file>
@@ -59,5 +56,19 @@
         <file>images/lines.png</file>
         <file>images/question.png</file>
         <file>images/Rotatem90.png</file>
+        <file>images/table.png</file>
+        <file>images/folder.png</file>
+        <file>images/folder_nempty.png</file>
+        <file>images/project.png</file>
+        <file>images/up_arrow.png</file>
+        <file>images/back_arrow.png</file>
+        <file>images/sand_clock.png</file>
+        <file>isrc/MAFY/cogs.svg</file>
+        <file>isrc/MAFY/twicks.svg</file>
+        <file>isrc/MAFY/eye.svg</file>
+        <file>isrc/MAFY/table-1.svg</file>
+        <file>isrc/MAFY/Align.svg</file>
+        <file>isrc/MAFY/open.svg</file>
+        <file>isrc/MAFY/save.svg</file>
     </qresource>
 </RCC>

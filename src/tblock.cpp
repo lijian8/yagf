@@ -18,17 +18,30 @@
 */
 
 #include "tblock.h"
+#include <QPoint>
 
 Block::Block(int x, int y, int width, int height) :
-    QRect(x, y, width, height)
+    QRect(x, y, width, height),
+    number(-1),
+    center(QRect::x()+QRect::width()/2, QRect::y()+QRect::height()/2),
+    tableCell(false),
+    rowEnd(false),
+    language("default")
 {
-    number = -1;
-    language = "default";
 }
 
-Block::Block(const QRect &r) : QRect(r.x(), r.y(), r.width(), r.height())
+Block::Block(const QRect &r) :
+    QRect(r.x(), r.y(), r.width(), r.height()),
+    number(-1),
+    center(QRect::x()+QRect::width()/2, QRect::y()+QRect::height()/2),
+    tableCell(false),
+    language("default")
+
 {
-    number = -1;
+}
+
+Block::Block()
+{
 }
 
 int Block::blockNumber()
@@ -46,9 +59,34 @@ void Block::setLanguage(const QString &lang)
     language = lang;
 }
 
+void Block::setTableCell(const bool value)
+{
+    tableCell = value;
+}
+
+bool Block::isTableCell()
+{
+    return tableCell;
+}
+
+void Block::setRowEnd(bool value)
+{
+    rowEnd = value;
+}
+
+bool Block::isRowEnd()
+{
+    return rowEnd;
+}
+
 QString Block::getLanguage()
 {
     return language;
+}
+
+QPoint Block::getCenter()
+{
+    return center;
 }
 
 bool rectLessThan(const QRect &r1, const QRect &r2)
@@ -60,7 +98,7 @@ bool rectLessThan(const QRect &r1, const QRect &r2)
     return false;
 }
 
-void sortBlocks(TBlocks &blocks)
+void sortBlocks(Blocks &blocks)
 {
     qSort(blocks.begin(), blocks.end(), rectLessThan);
 }

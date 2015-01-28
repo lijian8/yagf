@@ -17,6 +17,7 @@
 */
 
 #include <QObject>
+#include <QStringList>
 
 
 class QXmlStreamWriter;
@@ -39,7 +40,9 @@ private:
 private:
     QXmlStreamWriter *stream;
     QString directory;
-
+    QStringList imagesSaved;
+private:
+   void deleteGarbageFiles();
 };
 
 class ProjectLoader : public QObject
@@ -61,5 +64,9 @@ private:
 private:
     QXmlStreamReader *stream;
     QString directory;
-
+    QString version;
+    QStringList filesLoaded;
+private:
+    bool loadInternal(const QString &dir, const QString &fn);
+    void deleteGarbageFiles();
 };

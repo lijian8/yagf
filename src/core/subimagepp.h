@@ -20,16 +20,15 @@
 #ifndef SUBIMAGEPP_H
 #define SUBIMAGEPP_H
 
-#include <QObject>
 #include <QImage>
 #include "ccbuilder.h"
 #include "analysis.h"
 
-class SubimagePP : public QObject
+class SubimagePP
 {
-    Q_OBJECT
 public:
-    explicit SubimagePP(QImage &image, QObject *parent = 0);
+    explicit SubimagePP(QImage &image);
+    ~SubimagePP();
     void fillComponents();
     void removeBars();
     void removeNoise();

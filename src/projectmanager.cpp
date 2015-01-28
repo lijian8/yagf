@@ -19,15 +19,20 @@
 #include "projectmanager.h"
 #include "tpagecollection.h"
 #include "settings.h"
+#include "globallock.h"
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
 #include <QXmlStreamAttributes>
+#include <QStringList>
 
 const QString URI = "symmetrica.net/yagf";
-const QString VERSION = "0.9.2";
+const QString VERSION = "0.9.5";
+
+
 
 inline QString boolToString(bool value)
 {
@@ -41,12 +46,28 @@ ProjectSaver::ProjectSaver(QObject *parent) :
 
 bool ProjectSaver::save(const QString &dir)
 {
+    bool res = GlobalLock::instance()->lock();
+    if (!res)
+        return false;
+    Unlocker unlocker(true);
     directory = dir;
     if (!directory.endsWith("/")) directory = directory + "/";
+    QDir _dir(directory);
+    if (QFile::exists(directory+"yagf_project.old")) {
+            QFile f(directory+"yagf_project.old");
+            f.remove();
+    }
+    if (QFile::exists(directory+"yagf_project.xml")) {
+            QFile f(directory+"yagf_project.xml");
+            f.copy(directory+"yagf_project.old");
+    }
+    if (!_dir.exists())
+        _dir.mkdir(directory);
     QString fileName = directory+"yagf_project.xml";
     QFile f(fileName);
-    if (!f.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    if (!f.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         return false;
+    }
     stream = new QXmlStreamWriter(&f);
     stream->setAutoFormatting(true);
     stream->writeStartDocument();
@@ -58,22 +79,33 @@ bool ProjectSaver::save(const QString &dir)
     f.flush();
     delete stream;
     f.close();
+    Settings::instance()->addRecentProject(dir);
+    deleteGarbageFiles();
     return true;
 }
 
 void ProjectSaver::writePages()
 {
     PageCollection *pc = PageCollection::instance();
+    if (pc->count())
+        pc->storeCurrentIndex();
     for (int i =0; i < pc->count(); i++) {
         stream->writeStartElement(URI, "page");
         pc->makePageCurrent(i);
         stream->writeAttribute(URI, "image", copyFile(pc->fileName()));
+        QFileInfo fi(pc->fileName());
+        imagesSaved.append(fi.fileName());
+        stream->writeAttribute(URI, "title", pc->originalFileName());
         stream->writeAttribute(URI, "deskewed", boolToString(pc->isDeskewed()));
         stream->writeAttribute(URI, "rotation", QString::number(pc->getRotation()));
         stream->writeAttribute(URI, "preprocessed", boolToString(pc->isPreprocessed()));
+        stream->writeAttribute(URI, "cropped", boolToString(pc->isCropped()));
+        stream->writeAttribute(URI, "rtext", pc->text());
         writeBlocks();
         stream->writeEndElement();
     }
+    if (pc->count())
+        pc->restoreCurrentIndex();
 
 }
 
@@ -83,6 +115,9 @@ void ProjectSaver::writeBlocks()
     for (int i = 0; i < pc->blockCount(); i++) {
         stream->writeStartElement(URI, "block");
         Block b =pc->getBlock(i);
+        if (b.blockNumber()>0)
+            stream->writeAttribute(URI, "number", QString::number(b.blockNumber()));
+        b = pc->scaleRect(b, 1);
         stream->writeAttribute(URI, "left", QString::number(b.left()));
         stream->writeAttribute(URI, "top", QString::number(b.top()));
         stream->writeAttribute(URI, "width", QString::number(b.width()));
@@ -120,8 +155,10 @@ QString ProjectSaver::copyFile(const QString &source)
     if (source.endsWith(".ygf", Qt::CaseInsensitive)) {
         if (QFile::copy(source, newName))
             return fileName;
-        else
-            return "";
+        else {
+            QFileInfo  fs(newName);
+            return fs.fileName();
+        }
     } else {
         QImage image(source);
         if (image.save(newName))
@@ -133,26 +170,31 @@ QString ProjectSaver::copyFile(const QString &source)
     return "";
 }
 
+void ProjectSaver::deleteGarbageFiles()
+{
+    QDir dir;
+    dir.setPath(directory);
+    QFileInfoList fil = dir.entryInfoList();
+    foreach (QFileInfo fi, fil) {
+        if (!imagesSaved.contains(fi.fileName()))
+            if ((!fi.fileName().endsWith(".xml"))&&(!fi.fileName().endsWith(".old")))
+                dir.remove(fi.filePath());
+    }
+}
+
 ProjectLoader::ProjectLoader(QObject *parent):   QObject(parent)
 {
 }
 
 bool ProjectLoader::load(const QString &dir)
 {
-    directory = dir;
-    if (!directory.endsWith("/")) directory = directory + "/";
-    QString fileName = directory+"yagf_project.xml";
-    QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly))
+    bool res = GlobalLock::instance()->lock();
+    if (!res)
         return false;
-    stream = new QXmlStreamReader(&f);
-    stream->setNamespaceProcessing(true);
-    if (!readSettings())
-        return false;
-    if (!readPages())
-        return false;
-    f.close();
-    return true;
+    Unlocker unlocker(true);
+    if (loadInternal(dir, "yagf_project.xml"))
+            return true;
+    return loadInternal(dir, "yagf_project.old");
 }
 
 bool ProjectLoader::readSettings()
@@ -160,6 +202,7 @@ bool ProjectLoader::readSettings()
     Settings *settings = Settings::instance();
     if (!readNextElement())
         return false;
+    version = stream->attributes().value(URI, "version").toString();
     QStringRef n;
 
     while ((n = stream->name()) != "settings")
@@ -178,10 +221,22 @@ bool ProjectLoader::readSettings()
     return true;
 }
 
+int versionToInt(const QString &version)
+{
+    int res = 0;
+    for (int i = 0; i < version.count(); i++)
+        if (version.at(i).isDigit()) {
+            res *=10;
+            res += version.at(i).digitValue();
+        }
+    return res;
+}
+
 void ProjectLoader::loadPage()
 {
     QString image = stream->attributes().value(URI, "image").toString();
     QString fn = directory + image;
+    filesLoaded.append(image);
     bool oldcl = Settings::instance()->getCropLoaded();
     Settings::instance()->setCropLoaded(false);
     PageCollection *pc = PageCollection::instance();
@@ -190,6 +245,7 @@ void ProjectLoader::loadPage()
     QString value = stream->attributes().value(URI, "rotation").toString();
     bool deskewed = false;
     bool preprocessed =false;
+    bool cropped = false;
     qreal rotation = 0;
     if (!value.isEmpty()) {
         rotation = (value.toDouble());
@@ -198,11 +254,24 @@ void ProjectLoader::loadPage()
     if (!value.isEmpty()) {
         deskewed = value.endsWith("true", Qt::CaseInsensitive) ? true : false;
     }
+    value = stream->attributes().value(URI, "cropped").toString();
+    if (!value.isEmpty()) {
+        cropped = value.endsWith("true", Qt::CaseInsensitive) ? true : false;
+    }
     value = stream->attributes().value(URI, "preprocessed").toString();
     if (!value.isEmpty()) {
         preprocessed = (value.endsWith("true", Qt::CaseInsensitive) ? true : false);
     }
-    pc->newPage(fn,rotation,preprocessed, deskewed);
+    QString title = stream->attributes().value(URI, "title").toString();
+
+    Page * page = pc->newPage(fn,rotation,preprocessed, deskewed, cropped);
+    if (versionToInt(version) >= 94) {
+        value = stream->attributes().value(URI, "rtext").toString();
+        if (page) {
+            page->setRecognizedText(value);
+            page->setOriginalFileName(title);
+        }
+    }
 }
 
 bool ProjectLoader::readPages()
@@ -232,7 +301,14 @@ bool ProjectLoader::readBlocks()
         int left = stream->attributes().value(URI, "left").toString().toInt();
         int width = stream->attributes().value(URI, "width").toString().toInt();
         int height = stream->attributes().value(URI, "height").toString().toInt();
-        PageCollection::instance()->addBlock(QRect(left, top, width, height));
+        int bn = stream->attributes().value(URI, "number").toString().toInt();
+        QRect r(left, top, width, height);
+       // r = PageCollection::instance()->scaleRect(r);
+        r = PageCollection::instance()->scaleRectToPage(r);
+        if (bn > 0)
+            PageCollection::instance()->addBlock(r, bn);
+        else
+            PageCollection::instance()->addBlock(r);
         if (!readNextElement())
             return false;
     }
@@ -245,4 +321,38 @@ bool ProjectLoader::readNextElement()
         if (stream->atEnd())
             return false;
     return true;
+}
+
+bool ProjectLoader::loadInternal(const QString &dir, const QString &fn)
+{
+    directory = dir;
+    if (!directory.endsWith("/")) directory = directory + "/";
+    QString fileName = directory+fn;
+    QFile f(fileName);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    stream = new QXmlStreamReader(&f);
+    stream->setNamespaceProcessing(true);
+    if (!readSettings())
+        return false;
+    if (!readPages())
+        return false;
+    f.close();
+    Settings::instance()->addRecentProject(dir);
+    deleteGarbageFiles();
+    return true;
+}
+
+void ProjectLoader::deleteGarbageFiles()
+{
+    QDir dir;
+    dir.setPath(directory);
+    QFileInfoList fil = dir.entryInfoList();
+    foreach (QFileInfo fi, fil) {
+        if (!filesLoaded.contains(fi.fileName())) {
+            QString bm =fi.fileName();
+            if (!bm.endsWith(".xml"))
+                dir.remove(fi.filePath());
+        }
+    }
 }

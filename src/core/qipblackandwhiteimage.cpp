@@ -55,8 +55,12 @@ quint8 *QIPBlackAndWhiteImage::scanLine(quint32 y) const
     return &(data.data()[y*w]);
 }
 
-quint8 QIPBlackAndWhiteImage::pixel(quint32 x, quint32 y)
+quint8 QIPBlackAndWhiteImage::pixel(int x, int y)
 {
+    if (x < 0)
+        return 1;
+    if (x +y*w >= w*h)
+        return 1;
     return data.data()[x + y*w];
 }
 

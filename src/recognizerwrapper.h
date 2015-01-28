@@ -14,6 +14,7 @@
 #define RECOGNIZERWRAPPER_H
 
 #include <QObject>
+#include "tblock.h"
 
 class QString;
 class RecognizerWrapperInternal;
@@ -29,7 +30,7 @@ signals:
     void finished(int);
     void error(const QString &text);
     void blockRecognized(int n);
-   void readOutput(QString text);
+    void readOutput(QString text, QChar separator);
 public slots:
     void start();
     void startSingleBlock();

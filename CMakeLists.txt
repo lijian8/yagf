@@ -19,24 +19,28 @@ set(QML_DESTINATION share/yagf/translations/)
 set(QML_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 add_definitions( -DQML_INSTALL_PATH="${QML_INSTALL_PREFIX}${QML_DESTINATION}")
 
-set(SOURCES src/main.cpp src/mainform.cpp src/qgraphicsinput.cpp src/utils.cpp src/qxtunixsignalcatcher.cpp src/spellchecker.cpp src/PageAnalysis.cpp
+set(SOURCES src/main.cpp src/mainform.cpp src/qgraphicsinput.cpp src/utils.cpp src/qxtunixsignalcatcher.cpp src/spellchecker.cpp
     src/SkewAnalysis.cpp src/core/rotationcropper.cpp src/qxtgraphicsproxywidget.cpp src/popplerdialog.cpp src/pdfextractor.cpp src/pdf2ppt.cpp src/ghostscr.cpp
     src/configdialog.cpp src/core/ccbuilder.cpp src/core/analysis.cpp src/qsnippet.cpp src/sidebar.cpp src/droplabel.cpp src/projectmanager.cpp src/settings.cpp
-    src/texteditor.cpp src/tblock.cpp src/tpage.cpp src/tpagecollection.cpp src/scanner.cpp src/core/imageprocessor.cpp src/recognitiondialog.cpp
-    src/langselectdialog.cpp src/busyform.cpp src/tiffimporter.cpp src/pdfthread.cpp src/QBusyIndicator.cpp src/recognizerwrapper.cpp
-    src/core/binarize.cpp src/core/util.cpp src/core/qipblackandwhiteimage.cpp src/core/qipgrayscaleimage.cpp src/core/subimagepp.cpp)
+    src/texteditor.cpp src/tblock.cpp src/page.cpp src/tpagecollection.cpp src/scanner.cpp src/core/imageprocessor.cpp src/recognitiondialog.cpp
+    src/langselectdialog.cpp src/busyform.cpp src/tiffimporter.cpp src/QBusyIndicator.cpp src/recognizerwrapper.cpp
+    src/core/binarize.cpp src/core/util.cpp src/core/qipblackandwhiteimage.cpp src/core/qipgrayscaleimage.cpp src/core/subimagepp.cpp
+    src/core/tableanalizer.cpp src/core/pageanalysis.cpp src/core/pixelwindow.cpp src/extprocessdialog.cpp src/djvu2pdf.cpp
+    src/projectfiles.cpp src/saveprojectdialog.cpp src/fileobjectitem.cpp src/loadprojectdialog.cpp src/autosaver.cpp src/waitwindow.cpp src/globallock.cpp)
 
 set(HEADERS src/settings.h)
 
 set(INT_SOURCES src/preload.c)
 
-set(UIS src/mainform.ui src/popplerdialog.ui src/configdialog.ui src/langselectdialog.ui src/busyform.ui src/recognitiondialog.ui)
+set(UIS src/mainform.ui src/popplerdialog.ui src/configdialog.ui src/langselectdialog.ui src/busyform.ui src/recognitiondialog.ui src/extprocessdialog.ui
+    src/saveprojectdialog.ui src/waitwindow.ui)
 
 set(MOC_HEADERS src/mainform.h src/qxtunixsignalcatcher.h src/qxtunixscinternal.h src/qgraphicsinput.h src/qxtgraphicsproxywidget.h src/qxtgraphicsview.h
     src/popplerdialog.h src/pdfextractor.h src/configdialog.h src/core/ccbuilder.h src/sidebar.h
-    src/droplabel.h src/projectmanager.h src/texteditor.h src/tpage.h src/tpagecollection.h src/scanner.h src/core/imageprocessor.h
-    src/langselectdialog.h src/busyform.h src/tiffimporter.h src/pdfthread.h src/QBusyIndicator.h src/recognizerwrapper.h
-    src/recognizerwrapperinternal.h src/recognitiondialog.h src/core/subimagepp.h)
+    src/droplabel.h src/projectmanager.h src/texteditor.h src/page.h src/tpagecollection.h src/scanner.h src/core/imageprocessor.h
+    src/langselectdialog.h src/busyform.h src/tiffimporter.h src/QBusyIndicator.h src/recognizerwrapper.h
+    src/recognizerwrapperinternal.h src/recognitiondialog.h src/extprocessdialog.h src/djvu2pdf.h src/saveprojectdialog.h
+    src/loadprojectdialog.h src/menuaction.h src/autosaver.h src/waitwindow.h)
 
 set(yagf_RCCS src/yagf.qrc)
 

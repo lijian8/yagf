@@ -21,12 +21,13 @@
 #define PDF2PPT_H
 
 #include "pdfextractor.h"
+#include <QStringList>
 
 class PDF2PPT : public PDFExtractor
 {
 public:
     PDF2PPT();
-    virtual void exec();
+    virtual QStringList makeCommandString();
 };
 
 #endif // PDF2PPT_H

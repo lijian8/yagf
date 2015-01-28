@@ -48,7 +48,12 @@ void ConfigDialog::accept()
     } else {
         settings->setNoLocale(false);
     }
-    settings->setFontSize(ui->spinBox->value());
+    if (ui->checkBox_2->isChecked())
+        settings->setAutosaveInterval(ui->spinBox_2->value());
+    else
+        settings->setAutosaveInterval(30000);
+    settings->setFontSize(ui->fontSizeSpinBox->value());
+    settings->setMaxRecentProjects(ui->recentProjectsSpinBox->value());
     QDialog::accept();
 }
 
@@ -70,6 +75,15 @@ void ConfigDialog::init()
     ui->checkBoxDeskew->setChecked(settings->getAutoDeskew());
     ui->checkBoxPreprocess->setChecked(settings->getPreprocessed());
     ui->checkBoxProcessAfterDeskew->setChecked(settings->getDoublePreprocessed());
+    if (settings->getAutosaveInterval() > 60) {
+        ui->checkBox_2->setChecked(false);
+        ui->spinBox_2->setValue(15);
+        ui->spinBox_2->setEnabled(false);
+    } else{
+        ui->spinBox_2->setValue(settings->getAutosaveInterval());
+        ui->spinBox_2->setEnabled(true);
+    }
+
     QStringList sl3;
     if (settings->useNoLocale())
         sl3 << "English";
@@ -77,7 +91,10 @@ void ConfigDialog::init()
     sl3.removeDuplicates();
     //ui->comboBoxInterfaceLang->addItems(sl3);
 
-    ui->spinBox->setValue(settings->getFontSize());
+    ui->fontSizeSpinBox->setValue(settings->getFontSize());
+
+    ui->recentProjectsSpinBox->setValue(settings->getMaxRecentProjects());
+
 }
 
 
@@ -112,4 +129,9 @@ void ConfigDialog::on_checkBoxProcessAfterDeskew_toggled(bool checked)
 {
     if (ui->checkBoxProcessAfterDeskew->isChecked())
         ui->checkBoxDeskew->setChecked(true);
+}
+
+void ConfigDialog::on_checkBox_2_toggled(bool checked)
+{
+    ui->spinBox_2->setEnabled(ui->checkBox_2->isChecked());
 }

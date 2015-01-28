@@ -19,7 +19,7 @@
 #include "qgraphicsinput.h"
 #include "qxtgraphicsview.h"
 #include "qxtgraphicsproxywidget.h"
-#include "PageAnalysis.h"
+#include "core/pageanalysis.h"
 #include "math.h"
 #include "ycommon.h"
 #include "tblock.h"

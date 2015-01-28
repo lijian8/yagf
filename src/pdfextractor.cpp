@@ -17,7 +17,6 @@
 
 */
 
-#include "pdfthread.h"
 #include "pdfextractor.h"
 #include "settings.h"
 #include "utils.h"
@@ -34,8 +33,18 @@
 
 
 PDFExtractor::PDFExtractor(QObject *parent) :
-    QObject(parent)
+    QObject(parent), proc(), convertEntire(false)
 {
+    connect (&proc, SIGNAL(started()), this, SIGNAL(processStarted()), Qt::QueuedConnection);
+    connect(&proc, SIGNAL(finished(int)), this, SLOT(procFinished()), Qt::QueuedConnection);
+    //connect(&proc, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(procFinishedError()));
+    connect(&proc, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procFinishedError()));
+}
+
+PDFExtractor::~PDFExtractor()
+{
+    proc.kill();
+    clearFiles();
 }
 
 void PDFExtractor::setCommandStringPaged(const QString &cmdStr)
@@ -43,7 +52,7 @@ void PDFExtractor::setCommandStringPaged(const QString &cmdStr)
     commandStringPaged = cmdStr;
 }
 
-void PDFExtractor::setCommandStringEntire(const QString &cmdStr)
+void PDFExtractor::setConvertEntire(const QString &cmdStr)
 {
     commandStringEntire = cmdStr;
 }
@@ -76,6 +85,15 @@ void PDFExtractor::setOutputExtension(const QString &value)
 QString PDFExtractor::getOutputExtension()
 {
     return outputExtension;
+}
+
+void PDFExtractor::run()
+{
+    proc.setEnvironment(QProcess::systemEnvironment());
+    QStringList sl = makeCommandString();
+    QString cmd = sl.first();
+    sl.removeAt(0);
+    proc.start(cmd, sl);
 }
 
 void PDFExtractor::setOutputPrefix(const QString &value)
@@ -128,77 +146,73 @@ int PDFExtractor::getStopPage()
     return stopPage;
 }
 
-void PDFExtractor::cancel()
+void PDFExtractor::cancelProcess()
 {
-    stopPage = 1;
-    emit terminate();
+    proc.kill();
+    clearFiles();
 }
 
-void PDFExtractor::execInternal(const QString &command, const QStringList &arguments)
-{
-    filters.clear();
-    filters << QString("page*.%1").arg(getOutputExtension());
-    PDFThread thread(this);
-    QDir dir;
-    prepareDir(dir);
-    QFileInfoList prefil = dir.entryInfoList(filters, QDir::Files, QDir::Name);
-    foreach(QFileInfo fi, prefil) {
-        QFile f(fi.filePath());
-        f.remove();
-    }
 
-    thread.setProcess(command, arguments);
-    thread.start();
-    QApplication::processEvents();
-    bool cont = true;
-    while (cont) {
-        QApplication::processEvents();
-        if (!thread.isProcessRunning())
-            cont = false;
-    }
-    {
-        QDir dir;
-        prepareDir(dir);
-        QFileInfoList fil;
-        fil = dir.entryInfoList(filters, QDir::Files, QDir::Name);
-        int counter =  fil.count();
-        while (counter > 0) {
-                QApplication::processEvents();
-                        emit addPage(fil[fil.count() - counter].absoluteFilePath());
-                        counter--;
-        }
-    }
-    emit finished();
-}
-
-void PDFExtractor::prepareDir(QDir &dir)
+void PDFExtractor::sortDir(QDir &dir)
 {
-    pageCount();
+    //pageCount();
     dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
     dir.setSorting(QDir::Size | QDir::Reversed);
     dir.setSorting(QDir::Name);
     dir.setPath(outputDir);
 }
 
-int PDFExtractor::filesRemaining(const QString &fileName)
+
+#include "utils.h"
+
+
+void PDFExtractor::procFinished()
 {
-    lastFile = fileName;
+    emit processFinished(false);
+    processFiles();
+}
+
+void PDFExtractor::procFinishedError()
+{
+    emit error(trUtf8("There was an error while extracting PDF pages."));
+    emit processFinished(true);
+    processFiles();
+}
+
+void PDFExtractor::processFiles()
+{
+    QApplication::processEvents();
     QDir dir;
-    prepareDir(dir);
-    QStringList sl =  dir.entryList();
-    sl.sort();
-    for (int i = 0; i < sl.count(); i++) {
-        if (fileName.endsWith(sl.at(i)))
-            return sl.count() - i - 1;
+    sortDir(dir);
+    QFileInfoList fil;
+    fil = dir.entryInfoList(filters, QDir::Files, QDir::Name);
+    int counter =  fil.count();
+    while (counter > 0) {
+            int current = fil.count() - counter;
+            QApplication::processEvents();
+                    emit addPage(fil[current].absoluteFilePath(), current+1, fil.count());
+                    counter--;
     }
-    return -1;
+    clearFiles();
+    emit extractingFinished();
+}
+
+void PDFExtractor::clearFiles()
+{
+    QDir dir;
+    dir.setPath(outputDir);
+    QFileInfoList fil;
+    fil = dir.entryInfoList(filters, QDir::Files, QDir::Name);
+    foreach (QFileInfo fi, fil) {
+            dir.remove(fi.absoluteFilePath());
+    }
 }
 
 void PDFExtractor::removeRemaining()
 {
     if (lastFile != "") {
         QDir dir;
-        prepareDir(dir);
+        sortDir(dir);
         QStringList sl =  dir.entryList();
         sl.sort();
         bool doDelete = false;
@@ -214,40 +228,4 @@ void PDFExtractor::removeRemaining()
 
     }
     lastFile = "";
-}
-
-int PDFExtractor::filesTotal()
-{
-    QDir dir;
-    prepareDir(dir);
-    QStringList sl =  dir.entryList();
-    return sl.count();
-}
-
-#include "utils.h"
-
-int PDFExtractor::pageCount()
-{
-    if (findProgram(QString("pdfinfo"))) {
-        QProcess proc;
-        proc.setEnvironment(QProcess::systemEnvironment());
-        QString tex = "pdfinfo " + sourcePDF;
-        proc.setReadChannel(QProcess::StandardOutput);
-        proc.start(tex);
-        proc.waitForFinished();
-        //proc.execute(tex);
-        proc.waitForReadyRead(500);
-        QByteArray ba = proc.readAllStandardOutput();
-        QString out = QString(ba);
-        QStringList sl = out.split('\n');
-        sl.count();
-        foreach (QString s, sl) {
-            if (s.startsWith("Pages:")) {
-                QStringList sl2 = s.split(' ');
-                QString num = sl2.last();
-                return num.toInt();
-            }
-        }
-    }
-    return -1;
 }

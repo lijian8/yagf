@@ -19,6 +19,16 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <qglobal.h>
+
+typedef struct _Rect
+{
+    qint32 x1, x2, y1, y2;
+    int dotCount;
+    int label;
+} Rect;
+
+
 class QString;
 class QWidget;
 

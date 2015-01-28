@@ -17,10 +17,10 @@
 
 */
 
-#include "PageAnalysis.h"
-#include "core/rotationcropper.h"
-#include "core/ccbuilder.h"
-#include "core/analysis.h"
+#include "pageanalysis.h"
+#include "rotationcropper.h"
+#include "ccbuilder.h"
+#include "analysis.h"
 #include "utils.h"
 #include <QImage>
 #include <QPixmap>
@@ -161,12 +161,29 @@ void BlockSplitter::splitBlocks()
     blocks.append(b);
     splitVertical();
     splitHorisontal();
-//     qSort(blocks.begin(), blocks.end(), rectLessThan);
+
+
     for (int i = blocks.count() -1; i >=0; i--) {
         Rect r  = blocks.at(i);
         if (!isBlockRecogniseable(r))
             blocks.removeAll(r);
     }
+
+    /*CCBuilder ccb(img);
+    ccb.labelCCs();
+    CCAnalysis cca(&ccb);
+    cca.tableAnalise();
+    Rect r1  = cca.getTableRect();
+    cca.markTableBlocks(b);
+    QList<Rect> bl = cca.extractTableBlocks(b);
+    foreach (Rect r1, bl) {
+        blocks.append(r1);
+    }*/
+
+
+
+
+    //int i = bl.count();
 }
 
 QList<Rect> BlockSplitter::getBlocks()

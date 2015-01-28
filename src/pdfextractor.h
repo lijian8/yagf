@@ -22,6 +22,8 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QProcess>
+#include <QStringList>
 
 class QDir;
 class PDFExtractor : public QObject
@@ -29,8 +31,10 @@ class PDFExtractor : public QObject
     Q_OBJECT
 public:
     explicit PDFExtractor(QObject *parent = 0);
+    ~PDFExtractor();
     void setCommandStringPaged(const QString &cmdStr);
-    void setCommandStringEntire(const QString &cmdStr);
+    void setConvertEntire(const QString &cmdStr);
+    bool isConvertEntire();
     void setSourcePDF(const QString &value);
     QString getSourcePDF();
     void setOutputDir();
@@ -45,22 +49,26 @@ public:
     QString getOutputPrefix();
     void setOutputExtension(const QString &value);
     QString getOutputExtension();
-    void virtual exec() = 0;
-    int filesRemaining(const QString &fileName);
+    void run();
+    static bool findCProgram();
     void removeRemaining();
-    int filesTotal();
-    int pageCount();
 signals:
-    void terminate();
-    void killProcess();
-    void terminateProcess();
-    void addPage(QString pageName);
-    void finished();
+    void processStarted();
+    void processFinished(bool error);
+    void addPage(QString pageName, int current, int total);
+    void extractingFinished();
+    void error(const QString &text);
 public slots:
-    void cancel();
+    void cancelProcess();
+private slots:
+    void procFinished();
+    void procFinishedError();
 protected:
-    void execInternal(const QString &command, const QStringList &arguments);
-    void prepareDir(QDir &dir);
+    void sortDir(QDir &dir);
+    virtual QStringList makeCommandString() = 0;
+private:
+    void processFiles();
+    void clearFiles();
 private:
     QString commandStringPaged;
     QString commandStringEntire;
@@ -73,8 +81,8 @@ private:
     QString outputExtension;
     QStringList filters;
     QString lastFile;
-    static bool findCProgram();
-
+    QProcess proc;
+    bool convertEntire;
 };
 
 #endif // PDFEXTRACTOR_H

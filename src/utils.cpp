@@ -69,14 +69,19 @@ bool findProgram(const QString &name)
     return false;
 }
 
+static bool mbShown = false;
+
 void styledWarningMessage(QWidget *parent, const QString &text)
 {
+    if (mbShown) return;
     QMessageBox mb(parent);
     mb.setIconPixmap(QPixmap(":warning.png"));
     mb.setWindowTitle(QObject::trUtf8("Warning"));
     mb.setText(text);
     mb.setButtonText(0, QObject::trUtf8("OK"));
+    mbShown = true;
     mb.exec();
+    mbShown = false;
 }
 
 void styledInfoMessage(QWidget *parent, const QString &text)

@@ -25,6 +25,8 @@ private slots:
     void itemClicked(QListWidgetItem *item);
     void on_checkBoxProcessAfterDeskew_toggled(bool checked);
 
+    void on_checkBox_2_toggled(bool checked);
+
 private:
     void init();
 private:

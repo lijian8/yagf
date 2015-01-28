@@ -77,6 +77,10 @@ void Settings::readSettings(const QString &path)
     if (tessdataPath.isEmpty())
         findTessDataPath();
     languages = settings->value("ocr/selectedLanguages", QStringList(language)).toStringList();
+    rowBegin = settings->value("ocr/rowBegin", QVariant(QString("["))).toString();
+    rowEnd = settings->value("ocr/rowEnd", QVariant(QString("]"))).toString();
+    cellSeparator =settings->value("ocr/cellSeparator", QVariant("|")).toString();
+    rowFromNewLine = settings->value("ocr/rowFromNewLine", QVariant(true)).toBool();
     cropLoaded =  settings->value("processing/crop1", QVariant(true)).toBool();
     autoDeskew =  settings->value("processing/deskew", QVariant(true)).toBool();
     preprocess = settings->value("processing/preprocess", QVariant(true)).toBool();
@@ -94,6 +98,10 @@ void Settings::readSettings(const QString &path)
     uSeed = settings->value("tweaks/seed", QVariant(1)).toInt();
     tiffPS = settings->value("tweaks/tiffPageSize", QVariant(4000)).toString();
     tiffD = settings->value("tweaks/tiffDensity", QVariant(300)).toString();
+    projectDir = settings->value("projects/storage", QVariant(QDir::homePath())).toString();
+    recentProjects = settings->value("projects/recent", QVariant(QStringList())).toStringList();
+    maxRecentProjects = settings->value("projects/maxRecent", QVariant(8)).toInt();
+    autosaveInterval = settings->value("projects/autosaveInterval", QVariant(15)).toInt();
 }
 
 bool Settings::firstRun()
@@ -103,7 +111,7 @@ bool Settings::firstRun()
 
 void Settings::writeSettings()
 {
-    settings->setValue("program/version", QString::fromUtf8("0.9.4"));
+    settings->setValue("program/version", QString::fromUtf8("0.9.5"));
     settings->setValue("mainwindow/size", size);
     settings->setValue("mainwindow/iconSize", iconSize);
     settings->setValue("mainwindow/pos", position);
@@ -134,6 +142,10 @@ void Settings::writeSettings()
     settings->setValue("processing/preprocess", preprocess);
     settings->setValue("processing/dpreprocess", doublePreprocess);
     settings->setValue("ocr/keepLines", keepLines);
+    settings->setValue("ocr/rowBegin", rowBegin);
+    settings->setValue("ocr/rowEnd", rowEnd);
+    settings->setValue("ocr/cellSeparator", cellSeparator);
+    settings->setValue("ocr/rowFromNewLine", rowFromNewLine);
     settings->setValue("tweaks/darkBackgroundThreshold", darkBackgroundThreshold);
     settings->setValue("tweaks/foregroundBrightenFactor", foregroundBrightenFactor);
     settings->setValue("tweaks/globalBrightenFactor", globalBrightenFactor);
@@ -143,6 +155,10 @@ void Settings::writeSettings()
     settings->setValue("tweaks/tiffDensity", tiffD);
     settings->setValue("tweaks/skipWidth", skipWidth);
     settings->setValue("tweaks/seed", uSeed);
+    settings->setValue("projects/storage", projectDir);
+    settings->setValue("projects/recent", recentProjects);
+    settings->setValue("projects/maxRecent", maxRecentProjects);
+    settings->setValue("projects/autosaveInterval", autosaveInterval);
     settings->sync();
 }
 
@@ -201,6 +217,21 @@ bool Settings::getFullScreen()
 int Settings::getFontSize()
 {
     return fontSize;
+}
+
+QStringList Settings::getRecentProjects()
+{
+    return this->recentProjects;
+}
+
+int Settings::getMaxRecentProjects()
+{
+    return maxRecentProjects;
+}
+
+void Settings::setMaxRecentProjects(const int value)
+{
+    maxRecentProjects = value;
 }
 
 QString Settings::getFullLanguageName(const QString &abbr)
@@ -428,6 +459,11 @@ int Settings::getGlobalDarkenThreshold()
     return globalDarkenThreshold;
 }
 
+int Settings::getAutosaveInterval()
+{
+    return autosaveInterval;
+}
+
 QStringList Settings::fullLanguageNames()
 {
     QStringList res = tesMap.keys();
@@ -491,6 +527,27 @@ QStringList Settings::installedTesseractLanguages()
     }
     res.removeDuplicates();
     return res;
+}
+
+
+QString Settings::getRowBegin()
+{
+    return rowBegin;
+}
+
+QString Settings::getRowEnd()
+{
+    return rowEnd;
+}
+
+QString Settings::getCellSeparator()
+{
+    return cellSeparator;
+}
+
+bool Settings::getRowFromBNewLine()
+{
+    return rowFromNewLine;
 }
 
 void Settings::setSelectedLanguages(const QStringList &value)
@@ -637,7 +694,7 @@ void Settings::makeLanguageMaps()
     tesMap.insert(QObject::trUtf8("Turkish"), "tur");
     tesMap.insert(QObject::trUtf8("Ukrainian"), "ukr");
     tesMap.insert(QObject::trUtf8("Vietnamese"), "vie");
-    tesMap.insert("Digits Only", "digits");
+    tesMap.insert(QObject::trUtf8("Digits Only"), "digits");
     setLangTess();
 }
 
@@ -677,11 +734,75 @@ void Settings::setKeepLines(const bool value)
     keepLines = value;
 }
 
+void Settings::setRowBegin(const QString &value)
+{
+    rowBegin = value;
+}
+
+void Settings::setRowEnd(const QString &value)
+{
+    rowEnd = value;
+}
+
+void Settings::setCellSeparator(const QString &value)
+{
+    cellSeparator = value;
+}
+
+void Settings::setRowFromBNewLine(const bool value)
+{
+    rowFromNewLine = value;
+}
+
+void Settings::addRecentProject(const QString &project)
+{
+    if (project.contains("autosave"))
+        return;
+    for(int i = recentProjects.count()-1; i >= 0; i--) {
+        QString p = recentProjects.at(i);
+        if (!projectExists(p))
+            recentProjects.removeAll(p);
+    }
+
+    if(!recentProjects.contains(project)) {
+        recentProjects.prepend(project);
+        if (recentProjects.count() >= maxRecentProjects)
+            recentProjects.removeLast();
+    } else {
+       int i = recentProjects.indexOf(project);
+       if (i > 0)
+           recentProjects.swap(i, i-1);
+    }
+}
+
+void Settings::removeRecentProject(const QString &project)
+{
+    recentProjects.removeAll(project);
+}
+
+void Settings::setAutosaveInterval(const int value)
+{
+    autosaveInterval = value;
+}
+
+bool Settings::projectExists(const QString &dir)
+{
+    QString project = dir + "yagf_project.xml";
+    QFileInfo fi;
+    fi.setFile(project);
+    return fi.exists();
+}
+
 void Settings::findTessDataPath()
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     if (env.contains("TESSDATA_PREFIX")) {
         tessdataPath = env.value("TESSDATA_PREFIX");
+        if (tessdataPath.contains("$HOME")){
+            QString hp = QDir::homePath() +"/";
+            tessdataPath = tessdataPath.replace("$HOME", hp);
+            tessdataPath = tessdataPath.replace("//", "/");
+        }
         return;
     }
     QDir dir;

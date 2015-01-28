@@ -44,8 +44,11 @@ class QAction;
 class QPoint;
 class RecognizerWrapper;
 class RecognitionDialog;
+class ExtProcessDialog;
+class Djvu2PDF;
+class AutoSaveManager;
 
-const QString version = "0.9.4.3";
+const QString version = "0.9.5";
 
 class PageCollection;
 class ScannerBase;
@@ -58,6 +61,7 @@ public:
     ~MainForm();
 signals:
     void windowShown();
+    void callAfterConstructor();
 private slots:
     //void on_actionRecognize_activated();
     void on_actionSelect_HTML_format_activated();
@@ -87,8 +91,9 @@ private slots:
     void showHelp();
     void unalignButtonClicked();
     void importPDF(const QString &fileName);
+    void importDjVu(const QString &fileName);
     void showConfigDlg();
-    void addPDFPage(QString pageName);
+    void addPDFPage(QString pageName, int current, int total);
     void finishedPDF();
     void pasteimage();
     void deskewByBlock();
@@ -98,21 +103,27 @@ private slots:
     void loadFiles(const QStringList &files);
     void LangTextChanged(const QString &text);
     void SelectRecognitionLanguages();
-    void cancelPDF();
     void selectLanguages();
     void deskewByLine();
+protected:
+    void timerEvent(QTimerEvent * e);
 private:
     virtual void closeEvent(QCloseEvent *event);
     void initSettings();
     void loadFile(const QString &fn, bool loadIntoView = true);
     void loadTIFF(const QString &fn, bool loadIntoView = true);
-    //void loadFileWithPixmap(const QString &fn, const QPixmap &pixmap);
     void delTmpFiles();
+    void delAutoSaveFiles();
     void delTmpDir();
     QString getFileNameToSaveImage(QString &format);
     void loadFromCommandLine();
     void fillLangBox();
     void createRW();
+    void createRecentMenu();
+    void loadProjectInternal(const QString&path);
+    void connectTC(bool doIt);
+    void loadAutoSaved();
+    void saveTextInternal(bool allText);
 private:
     QComboBox *selectLangsBox;
     QGraphicsInput *graphicsInput;
@@ -125,6 +136,7 @@ private:
     //SpellChecker *spellChecker;
     QMenu *m_menu;
     PDFExtractor *pdfx;
+    Djvu2PDF * dj2pf;
     QProgressDialog *pdfPD;
     int ifCounter;
     Settings *settings;
@@ -135,24 +147,47 @@ private:
     bool globalDeskew;
     QPoint actPos;
     QString oldooltip;
+    int timerId;
     RecognizerWrapper * rw;
     RecognitionDialog * rd;
+    ExtProcessDialog * epd;
+    AutoSaveManager * _asm;
+    QString projectName;
+    bool dirty;
+    bool forbidAutoSave;
 private slots:
     void clickMeAgain();
     void readyRead(int sig);
     void setResizingCusor();
     void setUnresizingCusor();
-    void loadPage();
+    void loadPage(bool show);
     void rightMouseClicked(int x, int y, bool inTheBlock);
     void setupPDFPD();
     void onShowWindow();
     void addSnippet(int index);
     void preprocessPage();
+    void saveProjectAs();
     void saveProject();
     void loadProject();
     void on_actionKeep_Lines_toggled(bool arg1);
-    void readOutput(QString text);
+    void readOutput(QString text, QChar separator);
     void recognitionFinished();
     void recognitionError(const QString &text);
+    void reportError(const QString &text);
     void cancelRecognition();
+    void splitTable();
+    void showPDFprogress();
+    void extProcStarted();
+    void djvuStarted();
+    void djvuFinished();
+    void menuTriggered(const QString &text);
+    void closeAll();
+    void startedAutoSave();
+    void autosaveFinished();
+    void testslot();
+    void textChanged();
+    void afterConstructor();
+    void markDirty();
+    void saveAllText();
+    void saveCurrentText();
 };

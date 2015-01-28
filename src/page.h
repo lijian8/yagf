@@ -39,11 +39,13 @@ public:
     bool loadFile(QString fileName, int tiled, bool loadIntoView = true);
     QPixmap displayPixmap();
     QImage thumbnail();
+    QString recognizedText();
+    void setRecognizedText(const QString &t);
     bool makeLarger();
     bool makeSmaller();
     void rotate(qreal angle);
     void unload();
-    void addBlock(Block block);
+    void addBlock(Block block, int blocknum = 0, int inTable = 0);
     void deleteBlock(const Block &b);
     void deleteBlock(const QRect &r);
     Block getBlock(const QRect &r);
@@ -53,6 +55,7 @@ public:
     void savePageForRecognition(const QString &fileName);
     bool savePageAsImage(const QString &fileName, const QString &format);
     void saveRawBlockForRecognition(QRect r, const QString &fileName);
+    void saveSubimage(QRect r, const QString &fileName);
     void saveBlockForRecognition(QRect r, const QString &fileName, const QString &format);
     void saveBlockForRecognition(int index, const QString &fileName);
     void selectBlock(const QRect &r);
@@ -66,27 +69,31 @@ public:
     bool splitPage(bool preprocess);
     bool textHorizontal();
     QString fileName();
-    QString OriginalFileName() const;
+    QString originalFileName() const;
+    void setOriginalFileName(const QString &fn);
     int pageID();
     void sortBlocksInternal();
     bool isDeskewed();
     bool isCropped();
+    void setCropped(bool value);
     bool isPreprocessed();
     qreal getRotation();
     void setDeskewed(bool value);
     void setPreprocessed(bool value);
     void reSaveTmpPage();
-    void cropYGF();
     QRect scaleRect(QRect &rect);
+    QRect scaleTo(QRect &rect, qreal newScale);
+    QRect scaleRectToScale(QRect &rect);
+    void splitTable();
 signals:
-    void refreshView();
+    void refreshView(bool show);
     void textOut(const QString &msg);
 public slots:
 private:
     void renumberBlocks();
     void applyTransforms(QImage &image, qreal scale);
     void rotateImageInternal(QImage &image, qreal angle);
-    QRect scaleRectToScale(QRect &rect);
+    QRect shiftRectBeforeScale(QRect &rect, int sx, int sy);
     QImage tryRotate(QImage image, qreal angle);
     QImage currentImage();
     QString saveTmpPage(const QString &format);
@@ -103,7 +110,7 @@ private:
     bool deskewed;
     bool cropped;
     QImage img;
-    TBlocks blocks;
+    Blocks blocks;
     bool imageLoaded;
     bool loadedBefore;
     bool preprocessed;
@@ -113,6 +120,7 @@ private:
     int blockPointer;
     int pid;
     Block selectedBlock;
+    QString text;
 };
 
 #endif // TPAGE_H

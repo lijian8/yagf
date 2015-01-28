@@ -1,3 +1,8 @@
+* Wed Jan 28 2015 Andrei Borovsky - 0.9.5
+- Projects improved
+- Autosave projects
+- Table recognition support (experimental)
+- DjVu import supported
 * Mon Jun 30 2014 Andrei Borovsky - 0.9.4
 - to much new to mention here
 * Fri Mar 21 2014 Andrei Borovsky - 0.9.3.1

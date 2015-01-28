@@ -49,6 +49,9 @@ public:
     QPoint getPosition();
     bool getFullScreen();
     int getFontSize();
+    QStringList getRecentProjects();
+    int getMaxRecentProjects();
+    void setMaxRecentProjects(const int value);
     QString getFullLanguageName(const QString &abbr);
     QString getFullLanguageName(const QString &abbr, const QString &engine);
     QString getShortLanguageName(const QString &lang);
@@ -90,11 +93,16 @@ public:
     int getGlobalBrightenFactor();
     int getGlobalDarkenFactor();
     int getGlobalDarkenThreshold();
+    int getAutosaveInterval();
     QStringList fullLanguageNames();
     QStringList getSelectedLanguages();
     QStringList selectedLanguagesAvailableTo(const QString &engine);
     QStringList languagesAvailableTo(const QString &engine);
     QStringList installedTesseractLanguages();
+    QString getRowBegin();
+    QString getRowEnd();
+    QString getCellSeparator();
+    bool getRowFromBNewLine();
     void setSelectedLanguages(const QStringList &value);
     QString workingDir();
     void startLangPair();
@@ -107,6 +115,14 @@ public:
     void setLangTess();
     bool getKeepLines() const;
     void setKeepLines(const bool value);
+    void setRowBegin(const QString &value);
+    void setRowEnd(const QString &value);
+    void setCellSeparator(const QString &value);
+    void setRowFromBNewLine(const bool value);
+    void addRecentProject(const QString &project);
+    void removeRecentProject(const QString &project);
+    void setAutosaveInterval(const int value);
+    bool projectExists(const QString &dir);
 private:
     void findTessDataPath();
     QString selectDefaultLanguageName();
@@ -154,6 +170,13 @@ private:
     int skipWidth;
     bool keepLines;
     bool doublePreprocess;
+    QString rowBegin;
+    QString rowEnd;
+    QString cellSeparator;
+    bool rowFromNewLine;
+    QStringList recentProjects;
+    int maxRecentProjects;
+    int autosaveInterval;
 };
 
 #endif

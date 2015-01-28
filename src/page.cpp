@@ -17,14 +17,15 @@
 
 */
 
-#include "tpage.h"
+#include "page.h"
 #include "settings.h"
 #include "core/ccbuilder.h"
 #include "core/rotationcropper.h"
-#include "PageAnalysis.h"
+#include "core/pageanalysis.h"
 #include "core/analysis.h"
 #include "core/imageprocessor.h"
 #include "core/subimagepp.h"
+#include "globallock.h"
 #include <QSize>
 #include <QRect>
 #include <QFile>
@@ -44,6 +45,8 @@ Page::Page(const int pid, QObject *parent) :
     originalFN.clear();
     mFileName.clear();
     this->pid = pid;
+    scale = 1;
+    text = "";
 }
 
 Page::~Page()
@@ -85,8 +88,10 @@ bool Page::loadFile(QString fileName, int tiled, bool loadIntoView)
     ip.loadImage(img);
     settings = Settings::instance();
     if (settings->getCropLoaded()) {
-        if (!cropped)
+        if (!cropped) {
             ip.crop();
+            setCropped(true);
+        }
 
     }
     img = ip.gsImage();
@@ -132,6 +137,16 @@ QPixmap Page::displayPixmap()
 QImage Page::thumbnail()
 {
     return img.scaled(img.width()*0.125, img.height()*0.125);
+}
+
+QString Page::recognizedText()
+{
+    return text;
+}
+
+void Page::setRecognizedText(const QString &t)
+{
+    text = t;
 }
 
 bool Page::makeLarger()
@@ -261,7 +276,7 @@ Block Page::includes(const QRect &rect)
     return QRect(0,0,0,0);
 }
 
-void Page::addBlock(Block block)
+void Page::addBlock(Block block, int blocknum, int inTable)
 {
     QRect r = block;
     //normalizeRect(r);
@@ -278,12 +293,19 @@ void Page::addBlock(Block block)
             deleteBlock(r);
         }
     }
+    if (blocknum != 0)
+            block.setBlockNumber(blocknum);
     if (add) {
         block.setRect(r.x(), r.y(), r.width(), r.height());
         blocks.append(block);
     }
-    sortBlocksInternal();
-    renumberBlocks();
+    if (blocknum == 0) {
+        sortBlocksInternal();
+        renumberBlocks();
+    }
+    if (inTable == 1) {
+        block.setTableCell(true);
+    }
 }
 
 void Page::deleteBlock(const Block &b)
@@ -342,7 +364,13 @@ void Page::clearBlocks()
 
 void Page::savePageForRecognition(const QString &fileName)
 {
-    img.save(fileName, "BMP");
+    if(Settings::instance()->getCropLoaded()) {
+            ImageProcessor ip;
+            ip.loadImage(img);
+            ip.crop();
+            ip.gsImage().save(fileName, "BMP");
+    } else
+        img.save(fileName, "BMP");
 }
 
 bool Page::savePageAsImage(const QString &fileName, const QString &format)
@@ -354,6 +382,16 @@ void Page::saveRawBlockForRecognition(QRect r, const QString &fileName)
 {
 
     saveBlockForRecognition(r, fileName, "BMP");
+}
+
+void Page::saveSubimage(QRect r, const QString &fileName)
+{
+    QImage image = img.copy(r);
+    if (Settings::instance()->getUpscale()) {
+        ImageProcessor ip;
+        image = ip.upScale(image, true);
+    }
+    image.save(fileName);
 }
 
 void Page::saveBlockForRecognition(QRect r, const QString &fileName, const QString &format)
@@ -375,6 +413,12 @@ void Page::saveBlockForRecognition(QRect r, const QString &fileName, const QStri
 
 void Page::saveBlockForRecognition(int index, const QString &fileName)
 {
+    foreach(Block b, blocks) {
+        if (b.blockNumber() == index+1) {
+            saveBlockForRecognition(b, fileName, "BMP");
+            return;
+        }
+    }
     saveBlockForRecognition(blocks.at(index), fileName, "BMP");
 }
 
@@ -446,7 +490,7 @@ bool Page::deskew(bool recreateCB)
             }
             if (settings->getDoublePreprocessed()) {
                 ImageProcessor ip;
-                QImage img1 = ip.loadFromFile(OriginalFileName());
+                QImage img1 = ip.loadFromFile(originalFileName());
                 if (img1.format() != QImage::Format_ARGB32)
                     img1 = img1.convertToFormat(QImage::Format_ARGB32);
                 rotateImageInternal(img1, rotation);
@@ -473,6 +517,8 @@ bool Page::deskew(bool recreateCB)
     return true;
 }
 
+
+
 void Page::deskew(int x1, int y1, int x2, int y2)
 {
     float dx = x2-x1;
@@ -480,6 +526,8 @@ void Page::deskew(int x1, int y1, int x2, int y2)
     float dy = y2-y1;
 
     float angle = -atan(dy/dx)*360/6.283;
+    if (abs(angle) >= 45)
+        return;
     deskewed = true;
     if (abs(angle*100) < 1)
         return;
@@ -593,11 +641,16 @@ QString Page::fileName()
     return mFileName;
 }
 
-QString Page::OriginalFileName() const
+QString Page::originalFileName() const
 {
     if (originalFN.isEmpty())
         return mFileName;
     return originalFN;
+}
+
+void Page::setOriginalFileName(const QString &fn)
+{
+    originalFN = fn;
 }
 
 int Page::pageID()
@@ -607,6 +660,12 @@ int Page::pageID()
 
 void Page::sortBlocksInternal()
 {
+    bool allBlocksNumbered = true;
+    foreach(Block b, blocks)
+        if (b.blockNumber() == 0)
+            allBlocksNumbered = false;
+    if (allBlocksNumbered)
+        return;
     sortBlocks(blocks);
 }
 
@@ -618,6 +677,11 @@ bool Page::isDeskewed()
 bool Page::isCropped()
 {
     return cropped;
+}
+
+void Page::setCropped(bool value)
+{
+    cropped = value;
 }
 
 bool Page::isPreprocessed()
@@ -644,13 +708,16 @@ void Page::setPreprocessed(bool value)
 void Page::applyTransforms(QImage &image, qreal scale)
 {
     scale = scale*2;
-    QRect crop;
-    crop.setX(crop1.x()*scale);
-    crop.setY(crop1.y()*scale);
-    crop.setWidth(crop1.width()*scale);
-    crop.setHeight(crop1.height()*scale);
-    image = image.copy(crop);
+    if (!isCropped()) {
+        QRect crop;
+        crop.setX(crop1.x()*scale);
+        crop.setY(crop1.y()*scale);
+        crop.setWidth(crop1.width()*scale);
+        crop.setHeight(crop1.height()*scale);
+        image = image.copy(crop);
+    }
     rotateImageInternal(image, rotation);
+    setCropped(true);
 }
 
 void Page::rotateImageInternal(QImage &image, qreal angle)
@@ -672,6 +739,104 @@ QRect Page::scaleRect(QRect &rect)
     return rect;
 }
 
+QRect Page::scaleTo(QRect &rect, qreal newScale)
+{
+    qreal iscale = newScale/scale;
+    qreal oldw = rect.width();
+    qreal oldh = rect.height();
+    rect.setX(rect.x()*iscale);
+    rect.setY(rect.y()*iscale);
+    rect.setWidth(oldw*iscale);
+    rect.setHeight(oldh*iscale);
+    return rect;
+}
+
+bool blocksLessThan( Block &b1, Block &b2)
+{
+    if ((b1.top()/8) < (b2.top()/8))
+        return true;
+    else
+        if ((b1.top()/8) > (b2.top()/8))
+            return false;
+    if ((b1.left()) < (b2.left()))
+        return true;
+    return false;
+}
+
+int findLine(QVector<Block> table, int startFrom)
+{
+    if (startFrom > table.count())
+        return 0;
+    int baseY = table.at(startFrom - 1).y()/8;
+    for (int i = startFrom; i < table.count(); i++) {
+        int curY = table.at(i).y()/8;
+        if (curY != baseY)
+            return i;
+    }
+    return table.count();
+}
+
+void sortBlocks2(QVector<Block> &blocks)
+{
+    qSort(blocks.begin(), blocks.end(), blocksLessThan);
+}
+
+
+void Page::splitTable()
+{
+
+    Block bblock(0,0,0,0);
+    if (blockCount() == 1) {
+        bblock = blocks.at(0);
+        clearBlocks();
+    }
+    if (bblock.x() < 0)
+            bblock.setX(0);
+    if (bblock.y() < 0)
+            bblock.setY(0);
+    if (bblock.x() + bblock.width() > img.width())
+            bblock.setWidth(img.width() - 1 - bblock.x());
+    if (bblock.y() + bblock.height() > img.height())
+            bblock.setHeight(img.height() - 1 - bblock.y());
+    if (blockCount() == 1) {
+
+    }
+
+    ImageProcessor ip0;
+    ip0.loadImage(img);
+    QRect r = ip0.deskewByTable(bblock);
+    deskew(r.x(), r.y(), r.x()+r.width(), r.y() + r.height());
+
+    ImageProcessor ip;
+    ip.loadImage(img);
+    QList<Rect> b;
+
+
+
+    b = ip.splitTable(bblock);
+    if (b.count() < 3) {
+        ImageProcessor ip1;
+        ip1.loadImage(img);
+        b = ip1.splitTableForce(bblock);
+    }
+    Blocks bs;
+    for (int i = 0; i <  b.count(); i++) {
+        Rect r = b.at(i);
+        Block block(r.x1, r.y1, r.x2-r.x1, r.y2-r.y1);
+        scaleRectToScale(block);
+        bs.append(block);
+    }
+    QVector<Block> vb;
+    for (int i = 0; i <  bs.count(); i++)
+        vb.append(bs.at(i));
+    sortBlocks2(vb);
+    for (int i = 0; i < vb.count(); i++) {
+        addBlock(vb.at(i), i+1, 1);
+    }
+    vb.last().setRowEnd(true);
+    emit refreshView(true);
+}
+
 QRect Page::scaleRectToScale(QRect &rect)
 {
     qreal oldw = rect.width();
@@ -680,6 +845,20 @@ QRect Page::scaleRectToScale(QRect &rect)
     rect.setY(rect.y()*scale);
     rect.setWidth(oldw*scale);
     rect.setHeight(oldh*scale);
+    return rect;
+}
+
+
+QRect Page::shiftRectBeforeScale(QRect &rect, int sx, int sy)
+{
+    int w = rect.width();
+    int h = rect.height();
+    int tx = rect.x() + sx;
+    int ty = rect.y() + sy;
+    rect.setX(tx);
+    rect.setY(ty);
+    rect.setWidth(w);
+    rect.setHeight(h);
     return rect;
 }
 
@@ -700,7 +879,20 @@ QImage Page::currentImage()
         applyTransforms(img, 0.5);
         imageLoaded=true;
     }
-    return img.scaled(img.width()*scale, img.height()*scale);
+    try {
+        if (!img.isNull())
+            return img.scaled(img.width()*scale, img.height()*scale);
+        else {
+            ImageProcessor ip;
+            img = ip.loadYGF(mFileName);
+            if (img.isNull())
+                img.load(mFileName);
+            applyTransforms(img, scale);
+            return img;
+        }
+    } catch (...) {
+        return img;
+    }
 }
 #include <QTemporaryFile>
 QString Page::saveTmpPage(const QString &format)
@@ -724,13 +916,7 @@ void Page::reSaveTmpPage()
     ip.saveYGF(img, mFileName);
 }
 
-void Page::cropYGF()
-{
-    ImageProcessor ip;
-    ip.loadYGF(fileName());
-    ip.crop();
-    saveTmpPage("YGF");
-}
+
 
 void Page::renumberBlocks()
 {

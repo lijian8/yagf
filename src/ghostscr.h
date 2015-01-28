@@ -21,12 +21,13 @@
 #define GHOSTSCR_H
 
 #include "pdfextractor.h"
+#include "QStringList"
 
 class GhostScr : public PDFExtractor
 {
 public:
     GhostScr();
-    virtual void exec();
+    virtual QStringList makeCommandString();
 };
 
 #endif // PDF2PPT_H

@@ -25,10 +25,10 @@ GhostScr::GhostScr() : PDFExtractor()
 {
 }
 
-void GhostScr::exec()
+QStringList GhostScr::makeCommandString()
 {
-    QString command = "gs";
     QStringList args;
+    args.append("gs");
     args << "-SDEVICE=jpeg" << "-r1200x1200" << "-sPAPERSIZE=letter" << "-dNOPAUSE" << "-dBATCH";
     if (getStopPage() > 0) {
         if (getStartPage() == 0)
@@ -39,5 +39,5 @@ void GhostScr::exec()
     args << QString("-sOutputFile=").append(getOutputPrefix()).append("_%04d.jpg");
     args << "--" << this->getSourcePDF();
     setOutputExtension("jpg");
-    execInternal(command, args);
+    return args;
 }

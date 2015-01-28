@@ -25,10 +25,10 @@ PDF2PPT::PDF2PPT() : PDFExtractor()
 {
 }
 
-void PDF2PPT::exec()
+QStringList PDF2PPT::makeCommandString()
 {
-    QString command = "pdftoppm";
     QStringList args;
+    args.append("pdftoppm");
     args << "-jpeg";
     if (getStopPage() > 0) {
         if (getStartPage() == 0)
@@ -39,5 +39,5 @@ void PDF2PPT::exec()
     setOutputPrefix(getOutputDir().append("page"));
     args << getOutputPrefix();
     setOutputExtension("jpg");
-    execInternal(command, args);
+    return args;
 }

@@ -29,18 +29,30 @@ class Block : public QRect
 public:
     explicit Block( int x, int y, int width, int height );
     Block(const QRect &r);
+    Block();
     int blockNumber();
     void setBlockNumber(const int value);
     void setLanguage(const QString &lang);
+    void setTableCell(const bool value);
+    bool isTableCell();
+    void setRowEnd(bool value);
+    bool isRowEnd();
     QString getLanguage();
+    QPoint getCenter();
 private:
     int number;
+    QPoint center;
+    bool tableCell;
+    bool rowEnd;
     QString language;
 
 };
 
-typedef QList<Block> TBlocks;
+typedef QList<Block> TableRow;
+typedef QList<TableRow> TableBlocks;
 
-void sortBlocks(TBlocks &blocks);
+typedef QList<Block> Blocks;
+
+void sortBlocks(Blocks &blocks);
 
 #endif // TBLOCK_H

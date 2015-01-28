@@ -72,6 +72,13 @@ bool CCAnalysis::analize(bool extractBars)
     return false;
 }
 
+void CCAnalysis::tableAnalise()
+{
+    if (extractComponents(false)) {
+         classifyGlyphs();
+    }
+}
+
 Bars CCAnalysis::addBars()
 {
     extractComponents(true);
@@ -84,6 +91,16 @@ Bars CCAnalysis::addBars()
 Bars CCAnalysis::getBars()
 {
     return bars;
+}
+
+int listContains(QList<Rect> &list, int label)
+{
+    foreach (Rect r, list) {
+        if (r.label == label) {
+            return list.indexOf(r);
+        }
+    }
+    return -1;
 }
 
 bool CCAnalysis::extractComponents(bool extractBars)

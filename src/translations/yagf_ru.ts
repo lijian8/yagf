@@ -2,6 +2,13 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>AutoSaver</name>
+    <message>
+        <source>failed to save the project</source>
+        <translation>Ошибка сохранения проекта</translation>
+    </message>
+</context>
+<context>
     <name>ConfigDialog</name>
     <message>
         <source>OCR Engine</source>
@@ -18,10 +25,6 @@
     <message>
         <source>Image Processing</source>
         <translation>Обработка изображений</translation>
-    </message>
-    <message>
-        <source>Program Appearance</source>
-        <translation>Внешний вид программы</translation>
     </message>
     <message>
         <source>Cuneiform</source>
@@ -91,6 +94,66 @@
         <source>Process after Deskew</source>
         <translation>Обработка после исправления наклона</translation>
     </message>
+    <message>
+        <source>Program Behavoir</source>
+        <translation>Параметры</translation>
+    </message>
+    <message>
+        <source>Table Recognition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Autosave</source>
+        <translation>Включить автосохранение</translation>
+    </message>
+    <message>
+        <source>Autosave interval (minutes)</source>
+        <translation>Интервал автосохранения (минуты)</translation>
+    </message>
+    <message>
+        <source>Remember</source>
+        <translation>Запоминать</translation>
+    </message>
+    <message>
+        <source>Recent Projects</source>
+        <translation>Недавние проекты</translation>
+    </message>
+    <message>
+        <source>Recognize Modes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recognize separate cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recognize each row as a single cell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recognize each column as a single cell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cell Separator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Row Separator</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Djvu2PDF</name>
+    <message>
+        <source>The ddjvu utility from the DjVuLibre package has not been found.
+Please make sure the package is installed.</source>
+        <translation>Утилита ddjvu из пакета DjVuLibre не  найдена. Убедитесь: что пакет установлен.</translation>
+    </message>
+    <message>
+        <source>Failed to convert djvu to pdf</source>
+        <translation>Ошибка преобразования djvu в pdf</translation>
+    </message>
 </context>
 <context>
     <name>LangSelectDialog</name>
@@ -124,6 +187,13 @@
     </message>
 </context>
 <context>
+    <name>LoadProjectDialog</name>
+    <message>
+        <source>Load Project</source>
+        <translation>Загрузить проект</translation>
+    </message>
+</context>
+<context>
     <name>MainForm</name>
     <message>
         <source>Recognition language</source>
@@ -132,10 +202,6 @@
     <message>
         <source>Open Image</source>
         <translation>Открыть файл</translation>
-    </message>
-    <message>
-        <source>There is an unsaved text in the editor window. Do you want to save it?</source>
-        <translation>В окне редактора несохранённый текст. Сохранить?</translation>
     </message>
     <message>
         <source>Warning</source>
@@ -183,14 +249,6 @@ The page possibly lacks contrast. Try to select blocks manually.</source>
         <translation>Не удалось найти текстовые области на странице. Возможно, изображение было сканировано со слишком низким контрастом. Попробуйте выделить блоки вручную.</translation>
     </message>
     <message>
-        <source>The selected directoy is not empty. Please select or create another one.</source>
-        <translation>Выбранный каталог содержит файлы. Выберите пустой каталог или создайте новый.</translation>
-    </message>
-    <message>
-        <source>Failed to save the project.</source>
-        <translation>Ошибка при сохранении проекта.</translation>
-    </message>
-    <message>
         <source>Failed to load project.</source>
         <translation>Невозможно открыть проект.</translation>
     </message>
@@ -222,10 +280,6 @@ Falling back to cueniform. Please install cuneiform.</source>
         <translation>Tesseract не поддерживает ни один из выбранных языков. Используйте Cuneiform.</translation>
     </message>
     <message>
-        <source>Image Files (*.png *.jpg *.jpeg *.bmp *.tiff *.tif *.gif *.pnm *.pgm *.pbm *.ppm *.pdf)</source>
-        <translation>Файлы изображений (*.png *.jpg *.jpeg *.bmp *.tiff *.tif *.gif *.pnm *.pgm *.pbm *.ppm *.pdf)</translation>
-    </message>
-    <message>
         <source>Scanning is impossible. No scanning front-end is found.
 Please install XSane in order to perform scanning.</source>
         <translation>Сканирование невозможно, так как в систем не установлен XSane.</translation>
@@ -254,6 +308,50 @@ Please install XSane in order to perform scanning.</source>
         <source>Selected recognition engine not found.</source>
         <translation>Выбранная программа распознавания не найдена.</translation>
     </message>
+    <message>
+        <source>Image Files (*.png *.jpg *.jpeg *.bmp *.tiff *.tif *.gif *.pnm *.pgm *.pbm *.ppm *.pdf *.djvu)</source>
+        <translation>Файлы изображений (*.png *.jpg *.jpeg *.bmp *.tiff *.tif *.gif *.pnm *.pgm *.pbm *.ppm *.pdf *.djvu)</translation>
+    </message>
+    <message>
+        <source>There is an unsaved data. Do you want to save or to discard it?</source>
+        <translation>Данные не были сохранены. Сохранить?</translation>
+    </message>
+    <message>
+        <source>Nothing to save</source>
+        <translation>Нет данных</translation>
+    </message>
+    <message>
+        <source>Text Files (*.txt)</source>
+        <translation>Текстовые файлы (*.txt)</translation>
+    </message>
+    <message>
+        <source>Save All Text</source>
+        <translation>Сохранить весь текст</translation>
+    </message>
+    <message>
+        <source>Save Current Page Text</source>
+        <translation>Сохранить текст на текущей странице</translation>
+    </message>
+    <message>
+        <source>Cannot create the project directory </source>
+        <translation>Невозможно создать директорию проекта</translation>
+    </message>
+    <message>
+        <source>Extracting PDF Pages</source>
+        <translation>Извлечение страниц PDF</translation>
+    </message>
+    <message>
+        <source>Converting DjVu to PDF</source>
+        <translation>Преобразование djvu в pdf</translation>
+    </message>
+    <message>
+        <source>Autosave</source>
+        <translation>Автосохранение</translation>
+    </message>
+    <message>
+        <source>There is an unsaved data left from the previous  session. Do you want to open or discard it?</source>
+        <translation>На диске остались данные прощлого сеанса работы. Сохранить?</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -264,10 +362,6 @@ Please install XSane in order to perform scanning.</source>
     <message>
         <source>Scanning images using XSane...</source>
         <translation>Сканируем страницу с помощью XSane...</translation>
-    </message>
-    <message>
-        <source>&amp;Save text...</source>
-        <translation>&amp;Сохранить текст...</translation>
     </message>
     <message>
         <source>&amp;Open Image...</source>
@@ -470,10 +564,6 @@ Please install XSane in order to perform scanning.</source>
         <translation>Выбор языка распознавания</translation>
     </message>
     <message>
-        <source>Save Project...</source>
-        <translation>Сохранить проект...</translation>
-    </message>
-    <message>
         <source>Load Project...</source>
         <translation>Загрузить проект...</translation>
     </message>
@@ -565,6 +655,58 @@ Please install XSane in order to perform scanning.</source>
         <source>Keep line-breaks in the scanned text</source>
         <translation>Сохранять строки в отсканированном тексте, как в оригинале</translation>
     </message>
+    <message>
+        <source>    selectLangsBox-&gt;setStyleSheet(&quot;border: 1px solid blue; padding: 2px 2px 2px 18px; min-width: 6em; background-color: white; selection-background-color:blue; QComboBox::drop-down: { width: 0px; border-style: none}&quot;);
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>toolBar_6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Save All Text...</source>
+        <translation>&amp;Сохранить весь текст...</translation>
+    </message>
+    <message>
+        <source>Ctrl+X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Project As...</source>
+        <translation>Сохранить проект как...</translation>
+    </message>
+    <message>
+        <source>Select Table</source>
+        <translation>Выделить таблицу</translation>
+    </message>
+    <message>
+        <source>Recent Projects</source>
+        <translation>Недавние проекты</translation>
+    </message>
+    <message>
+        <source>Close All</source>
+        <translation>Закрыть все</translation>
+    </message>
+    <message>
+        <source>Save Project</source>
+        <translation>Сохранить проект</translation>
+    </message>
+    <message>
+        <source>TestAction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Text on the Page...</source>
+        <translation>Сохранить текст на текущей странице...</translation>
+    </message>
+</context>
+<context>
+    <name>PDFExtractor</name>
+    <message>
+        <source>There was an error while extracting PDF pages.</source>
+        <translation>Ошибка импорта страниц из документа PDF.</translation>
+    </message>
 </context>
 <context>
     <name>PopplerDialog</name>
@@ -600,6 +742,14 @@ Please install XSane in order to perform scanning.</source>
         <source>Don&apos;t Deskew Pages</source>
         <translation>Отключить исправление наклона страниц</translation>
     </message>
+    <message>
+        <source>Open PDF File</source>
+        <translation>Открыть файл PDF</translation>
+    </message>
+    <message>
+        <source>PDF Files (*.pdf)</source>
+        <translation>Файлы PDF (*.pdf)</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -622,10 +772,6 @@ Try to install an appropriate aspell dictionary.</source>
         <translation>Требуемый орфографический словарь (%1) не найден.
 Проверка орфографии будет отключена.
 Попробуйте установить соответствующий словарь aspell.</translation>
-    </message>
-    <message>
-        <source>Select Project Directory</source>
-        <translation>Выбор каталога проекта</translation>
     </message>
     <message>
         <source>Bulgarian</source>
@@ -855,6 +1001,26 @@ Try to install an appropriate aspell dictionary.</source>
         <source>Thai</source>
         <translation>Тайский</translation>
     </message>
+    <message>
+        <source>Digits Only</source>
+        <translation>Только цифры</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Предупреждение</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Да</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <translation>Сообщение</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
 </context>
 <context>
     <name>RecognitionDialog</name>
@@ -872,10 +1038,75 @@ Try to install an appropriate aspell dictionary.</source>
     </message>
 </context>
 <context>
+    <name>RecognizerWrapper</name>
+    <message>
+        <source>Recognizer error.</source>
+        <translation>Ошибка распознавания.</translation>
+    </message>
+</context>
+<context>
+    <name>SaveProjectDialog</name>
+    <message>
+        <source>Save Project</source>
+        <translation>Сохранить проект</translation>
+    </message>
+    <message>
+        <source>Move Backwards</source>
+        <translation>Вернуться</translation>
+    </message>
+    <message>
+        <source>Move to the Upper Directory</source>
+        <translation>На директорию выше</translation>
+    </message>
+    <message>
+        <source>Add project name</source>
+        <translation>Задайте имя проекта</translation>
+    </message>
+    <message>
+        <source>Save project to this folder?</source>
+        <translation>Сохранить проект в этой директории?</translation>
+    </message>
+</context>
+<context>
     <name>SideBar</name>
     <message>
         <source>Drop files here</source>
         <translation>Перетащите файлы сюда</translation>
+    </message>
+</context>
+<context>
+    <name>TextEditor</name>
+    <message>
+        <source>Undo	Ctrl+Z</source>
+        <translation>Отменить	Ctrl+Z</translation>
+    </message>
+    <message>
+        <source>Redo	Ctrl+Shift+Z</source>
+        <translation>Вернуть	Ctrl+Shift+Z</translation>
+    </message>
+    <message>
+        <source>Select All	Ctrl+A</source>
+        <translation>Выбрать все	Ctrl+A</translation>
+    </message>
+    <message>
+        <source>Cut	Ctrl+X</source>
+        <translation>Вырезать	Ctrl+X</translation>
+    </message>
+    <message>
+        <source>Copy	Ctrl+C</source>
+        <translation>Копировать	Ctrl+C</translation>
+    </message>
+    <message>
+        <source>Paste	Ctrl+V</source>
+        <translation>Вставить	Ctrl+V</translation>
+    </message>
+    <message>
+        <source>Larger Font	Ctrl++</source>
+        <translation>Увеличить шрифт	Ctrl++</translation>
+    </message>
+    <message>
+        <source>Smaller Font	Ctrl+-</source>
+        <translation>Уменьшить шрифт	Ctrl+-</translation>
     </message>
 </context>
 </TS>

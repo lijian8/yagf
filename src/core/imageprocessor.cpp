@@ -21,6 +21,7 @@
 #include "qipblackandwhiteimage.h"
 #include "subimagepp.h"
 #include "settings.h"
+#include "tableanalizer.h"
 #include <QImage>
 #include <QMap>
 #include <QVector>
@@ -106,9 +107,10 @@ void ImageProcessor::altBinarize()
     img.blendImage(bwimg);
 }
 
-void ImageProcessor::fastBinarize()
+QIPBlackAndWhiteImage ImageProcessor::fastBinarize()
 {
-    QIPBlackAndWhiteImage bwimg = img.binarize(QIPGrayscaleImage::BernsenBinarization);
+    //img.smoother();
+    return img.binarize(QIPGrayscaleImage::BradleyBinarization);
 }
 
 void ImageProcessor::saveForPDF(const QImage &image, const QString &fileName, int squish)
@@ -333,6 +335,44 @@ QImage ImageProcessor::upScale(const QImage &image, bool bolden)
     }
     else
         return gsImage();
+}
+
+QList<Rect> ImageProcessor::splitTable(const QRect &bounds)
+{
+   QRect brect = bounds;
+   QIPBlackAndWhiteImage bwi = fastBinarize();
+   normalizeBounds(brect, bwi.width(), bwi.height());
+   TableAnalizer ti(&bwi);
+   return ti.splitTable(brect);
+}
+
+QList<Rect> ImageProcessor::splitTableForce(const QRect &bounds)
+{
+    QRect brect = bounds;
+    QIPBlackAndWhiteImage bwi = fastBinarize();
+    normalizeBounds(brect, bwi.width(), bwi.height());
+    TableAnalizer ti(&bwi);
+    return ti.splitTableForce(brect);
+}
+
+QRect ImageProcessor::deskewByTable(const QRect &bounds)
+{
+    QRect brect = bounds;
+    QIPBlackAndWhiteImage bwi = fastBinarize();
+    normalizeBounds(brect, bwi.width(), bwi.height());
+    TableAnalizer ti(&bwi);
+    Rect r = ti.getSkew(brect);
+    return QRect(r.x1, r.y1, r.x2-r.x1, r.y2-r.y1);
+}
+
+void ImageProcessor::normalizeBounds(QRect &bounds, int w, int h)
+{
+    if ((bounds.width() == 0)||(bounds.height() == 0)) {
+        bounds.setX(0);
+        bounds.setY(0);
+        bounds.setWidth(w);
+        bounds.setHeight(h);
+    }
 }
 
 

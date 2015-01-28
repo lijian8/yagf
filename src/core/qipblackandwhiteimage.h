@@ -124,13 +124,16 @@ public:
 
     bool isNull() const;
     void free();
+
+     quint8 * scanLine(quint32 y) const;
+     quint8 pixel(int x, int y);
 private:
     int w, h;
     QSharedPointer<quint8> data;
 private:
     void toImageInternal(uchar * image, const IntRect &rect, int imageWidth) const;
-    quint8 * scanLine(quint32 y) const;
-    inline quint8 pixel(quint32 x, quint32 y);
+
+
     inline void setPixel(quint32 x, quint32 y, quint8 value);
     bool compareElements(quint8 **se, quint8 **w, int dimensions) const;
     IntRect cropInternal(bool upperLeft) const;

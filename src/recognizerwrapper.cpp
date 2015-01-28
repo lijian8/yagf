@@ -22,7 +22,7 @@ RecognizerWrapper::RecognizerWrapper(QObject *parent) :
     connect(rwi, SIGNAL(finished(int)), this, SIGNAL(finished(int)));
     connect(rwi, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
     connect(rwi, SIGNAL(blockRecognized(int)), this, SIGNAL(blockRecognized(int)));
-    connect(rwi, SIGNAL(readOutput(QString)), this, SIGNAL(readOutput(QString)));
+    connect(rwi, SIGNAL(readOutput(QString, QChar)), this, SIGNAL(readOutput(QString, QChar)));
 }
 
 RecognizerWrapper::~RecognizerWrapper()
@@ -44,6 +44,7 @@ void RecognizerWrapper::startSingleBlock()
 {
     rwi->recognizeInternal();
 }
+
 
 void RecognizerWrapper::cancel()
 {

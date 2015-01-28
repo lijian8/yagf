@@ -474,6 +474,15 @@
               <family>Times New Roman</family>
              </font>
             </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOn</enum>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>    selectLangsBox-&gt;setStyleSheet(&quot;border: 1px solid blue; padding: 2px 2px 2px 18px; min-width: 6em; background-color: white; selection-background-color:blue; QComboBox::drop-down: { width: 0px; border-style: none}&quot;);
+</string>
+            </property>
            </widget>
           </widget>
          </item>
@@ -503,9 +512,13 @@
     <addaction name="separator"/>
     <addaction name="actionRecognize"/>
     <addaction name="action_Save"/>
-    <addaction name="separator"/>
+    <addaction name="actionSave_Text_on_the_Page"/>
     <addaction name="actionSave_current_image"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose_All"/>
+    <addaction name="actionRecent_Projects"/>
     <addaction name="actionSave_Project"/>
+    <addaction name="actionSave_Project_As"/>
     <addaction name="actionLoad_Project"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -574,6 +587,8 @@
    <addaction name="actionOpen"/>
    <addaction name="actionScan"/>
    <addaction name="actionPaste_Image"/>
+   <addaction name="actionLoad_Project"/>
+   <addaction name="actionSave_Project"/>
   </widget>
   <widget class="QToolBar" name="toolBar_2">
    <property name="windowTitle">
@@ -666,10 +681,20 @@ QComboBox {
    </attribute>
    <addaction name="actionSelect_Text_Area"/>
    <addaction name="actionSelect_multiple_blocks"/>
+   <addaction name="actionSelect_Table"/>
    <addaction name="ActionClearAllBlocks"/>
-   <addaction name="ActionDeleteBlock"/>
    <addaction name="actionRecognize"/>
-   <addaction name="separator"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_6">
+   <property name="windowTitle">
+    <string>toolBar_6</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <widget class="QToolBar" name="toolBar_4">
    <property name="windowTitle">
@@ -729,10 +754,10 @@ QComboBox {
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save text...</string>
+    <string>&amp;Save All Text...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string>Ctrl+X</string>
    </property>
   </action>
   <action name="actionOpen">
@@ -1096,12 +1121,16 @@ QComboBox {
     <string>Select Recognition Language</string>
    </property>
   </action>
-  <action name="actionSave_Project">
+  <action name="actionSave_Project_As">
    <property name="text">
-    <string>Save Project...</string>
+    <string>Save Project As...</string>
    </property>
   </action>
   <action name="actionLoad_Project">
+   <property name="icon">
+    <iconset resource="yagf.qrc">
+     <normaloff>:/isrc/MAFY/open.svg</normaloff>:/isrc/MAFY/open.svg</iconset>
+   </property>
    <property name="text">
     <string>Load Project...</string>
    </property>
@@ -1124,6 +1153,9 @@ QComboBox {
    </property>
    <property name="toolTip">
     <string>Select all the recognized text</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
   <action name="actionSelect_languages">
@@ -1151,6 +1183,54 @@ QComboBox {
    </property>
    <property name="toolTip">
     <string>Keep line-breaks in the scanned text</string>
+   </property>
+  </action>
+  <action name="actionSelect_Table">
+   <property name="icon">
+    <iconset resource="yagf.qrc">
+     <normaloff>:/images/table.png</normaloff>:/images/table.png</iconset>
+   </property>
+   <property name="text">
+    <string>Select Table</string>
+   </property>
+   <property name="toolTip">
+    <string>Select Table</string>
+   </property>
+  </action>
+  <action name="actionRecent_Projects">
+   <property name="text">
+    <string>Recent Projects</string>
+   </property>
+  </action>
+  <action name="actionClose_All">
+   <property name="text">
+    <string>Close All</string>
+   </property>
+  </action>
+  <action name="actionSave_Project">
+   <property name="icon">
+    <iconset resource="yagf.qrc">
+     <normaloff>:/isrc/MAFY/save.svg</normaloff>:/isrc/MAFY/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionTestAction">
+   <property name="icon">
+    <iconset resource="yagf.qrc">
+     <normaloff>:/images/recblocks.png</normaloff>:/images/recblocks.png</iconset>
+   </property>
+   <property name="text">
+    <string>TestAction</string>
+   </property>
+  </action>
+  <action name="actionSave_Text_on_the_Page">
+   <property name="text">
+    <string>Save Text on the Page...</string>
    </property>
   </action>
  </widget>
@@ -1357,10 +1437,10 @@ QComboBox {
    </hints>
   </connection>
   <connection>
-   <sender>actionSave_Project</sender>
+   <sender>actionSave_Project_As</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>saveProject()</slot>
+   <slot>saveProjectAs()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1420,6 +1500,86 @@ QComboBox {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSelect_Table</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>splitTable()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>568</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave_Project</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>saveProject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>568</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClose_All</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>closeAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>568</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionTestAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>testslot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>568</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave_Text_on_the_Page</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>saveCurrentText()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>568</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>rotateCWButtonClicked()</slot>
@@ -1436,10 +1596,15 @@ QComboBox {
   <slot>selectBlocks()</slot>
   <slot>setSmallIcons()</slot>
   <slot>preprocessPage()</slot>
-  <slot>saveProject()</slot>
+  <slot>saveProjectAs()</slot>
   <slot>loadProject()</slot>
   <slot>SelectRecognitionLanguages()</slot>
   <slot>deskewByLine()</slot>
   <slot>upscale()</slot>
+  <slot>splitTable()</slot>
+  <slot>saveProject()</slot>
+  <slot>closeAll()</slot>
+  <slot>testslot()</slot>
+  <slot>saveCurrentText()</slot>
  </slots>
 </ui>

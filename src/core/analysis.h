@@ -21,6 +21,7 @@
 #define ANALYSIS_H
 
 #include "ccbuilder.h"
+#include "utils.h"
 #include <QObject>
 //#include <QRect>
 #include <QHash>
@@ -28,12 +29,6 @@
 #include <QList>
 #include <QPoint>
 
-typedef struct _Rect
-{
-    qint32 x1, x2, y1, y2;
-    int dotCount;
-    uint label;
-} Rect;
 
 bool operator==(Rect r1, Rect r2);
 
@@ -63,17 +58,18 @@ public:
         CCAnalysis(CCBuilder * builder);
 	~CCAnalysis();
         bool analize(bool extractBars = false);
+        void tableAnalise();
         Bars addBars();
         Bars getBars();
         QList<Rect> getAllComponents(bool extractBars);
         TextLine extractLine();
-	int getGlyphCount();
-    QList<Rect> getGlyphs();
-	int getMediumGlyphHeight();
-	int getMediumGlyphWidth();
-	int getMediumLetterSpace();
-	int getMediumWordSpace();
-	int getStringsCount();
+        int getGlyphCount();
+        QList<Rect> getGlyphs();
+        int getMediumGlyphHeight();
+        int getMediumGlyphWidth();
+        int getMediumLetterSpace();
+        int getMediumWordSpace();
+        int getStringsCount();
         int getGlyphBoxCount();
         Rect getGlyphBox(int index);
         QRect getStringBox(const int index) const;
@@ -94,17 +90,17 @@ private:
         void addBarsVertical();
 private:
         CCBuilder * builder;
-	ComponentParameters components;
-	Strings strings;
+        ComponentParameters components;
+        Strings strings;
         StringsBoxes boxes;
         GlyphField glyphField;
         Lines lines;
-	int glyphCount;
-	int mediumGlyphHeight;
-	int mediumGlyphWidth;
-	int mediumLetterSpace;
-	int mediumWordSpace;
-	int stringsCount;
+        int glyphCount;
+        int mediumGlyphHeight;
+        int mediumGlyphWidth;
+        int mediumLetterSpace;
+        int mediumWordSpace;
+        int stringsCount;
         qreal k;
     Bars bars;
     QVector<Rect> verts;

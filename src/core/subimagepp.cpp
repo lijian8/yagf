@@ -21,8 +21,8 @@
 #include "settings.h"
 #include <QSet>
 
-SubimagePP::SubimagePP(QImage &image, QObject *parent) :
-    QObject(parent), img(image), ccbuilder(image)
+SubimagePP::SubimagePP(QImage &image) :
+img(image), ccbuilder(image)
 {
     ccbuilder.labelCCs();
     quint32 hist[256] = {0};
@@ -55,6 +55,11 @@ SubimagePP::SubimagePP(QImage &image, QObject *parent) :
             }
         }
     }*/
+}
+
+SubimagePP::~SubimagePP()
+{
+    components.clear();
 }
 
 void SubimagePP::fillComponents()

@@ -17,30 +17,29 @@
 
 */
 
-#ifndef PDFTHREAD_H
-#define PDFTHREAD_H
+#ifndef EXTPROCESSDIALOG_H
+#define EXTPROCESSDIALOG_H
 
-#include <QThread>
-#include <QStringList>
+#include <QDialog>
 
-class PDFExtractor;
-class PDFThread : public QThread
+namespace Ui {
+class ExtProcessDialog;
+}
+
+class ExtProcessDialog : public QDialog
 {
     Q_OBJECT
+    
 public:
-    explicit PDFThread(PDFExtractor *parent = 0);
-    ~PDFThread();
-    void run();
-    void setProcess(const QString &cmd, const QStringList &args);
-    bool isProcessRunning();
+    explicit ExtProcessDialog(QWidget *parent = 0);
+    ~ExtProcessDialog();
+    void hideButton();
 public slots:
-    void politeStop();
+    void hide();
+private slots:
+    void on_pushButton_clicked();
 private:
-    bool done;
-    QString command;
-    QStringList arguments;
-    PDFExtractor *mparent;
-    bool processRunning;
+    Ui::ExtProcessDialog *ui;
 };
 
-#endif // PDFTHREAD_H
+#endif // EXTPROCESSDIALOG_H

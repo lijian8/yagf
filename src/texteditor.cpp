@@ -35,7 +35,6 @@ TextEditor::TextEditor(QWidget *parent) :
     QTextEdit(parent), spellChecker(this)
 {
     hasCopy = false;
-    mTextSaved = true;
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequested(QPoint)));
     connect(document(), SIGNAL(cursorPositionChanged(const QTextCursor &)), this, SLOT(updateSP()));
@@ -45,11 +44,6 @@ TextEditor::TextEditor(QWidget *parent) :
 
 TextEditor::~TextEditor()
 {
-}
-
-bool TextEditor::textSaved()
-{
-    return mTextSaved;
 }
 
 bool TextEditor::spellCheck(const QString &lang)
@@ -73,36 +67,6 @@ bool TextEditor::hasDict(const QString &shname)
     return spellChecker.hasDict(shname);
 }
 
-void TextEditor::saveText()
-{
-    Settings *settings = Settings::instance();
-    QString filter;
-    if (settings->getOutputFormat() == "text")
-        filter = trUtf8("Text Files (*.txt)");
-    else
-        filter = trUtf8("HTML Files (*.html)");
-    QFileDialog dialog(this,
-                       trUtf8("Save Text"), settings->getLastOutputDir(), filter);
-    if (settings->getOutputFormat() == "text")
-        dialog.setDefaultSuffix("txt");
-    else
-        dialog.setDefaultSuffix("html");
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    if (dialog.exec()) {
-        QStringList fileNames;
-        fileNames = dialog.selectedFiles();
-        settings->setLastOutputDir(dialog.directory().path());
-        QFile textFile(fileNames.at(0));
-        textFile.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        if (settings->getOutputFormat() == "text")
-            textFile.write(toPlainText().toUtf8());
-        else
-            saveHtml(&textFile);
-        textFile.close();
-        mTextSaved = true;
-    }
-
-}
 
 void TextEditor::keyPressEvent(QKeyEvent *e)
 {
@@ -149,7 +113,6 @@ void TextEditor::copyAvailable(bool yes)
 
 void TextEditor::textChanged()
 {
-    mTextSaved = !(toPlainText().count());
     Settings *settings = Settings::instance();
     QFont f(font());
     f.setPointSize(settings->getFontSize());
